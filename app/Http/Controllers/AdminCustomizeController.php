@@ -295,7 +295,6 @@ class AdminCustomizeController extends Controller
         return response()->json(array_merge(
             $this->homeSettings(),
             $this->aboutSettings(),
-            $this->strukturSettings(),
             ['struktur_board_members' => $members],
             $this->mediaSettings(),
         ));
@@ -326,17 +325,6 @@ class AdminCustomizeController extends Controller
         ];
 
         return array_replace($defaults, CustomizeAboutUs::query()->first()?->only(array_keys($defaults)) ?? []);
-    }
-
-    private function strukturSettings(): array
-    {
-        $defaults = [
-            'struktur_section_tagline' => 'Struktur Organisasi',
-            'struktur_section_title' => 'Kepengurusan Partai Garuda',
-            'struktur_section_description' => 'Struktur kepengurusan Partai Garuda dari tingkat pusat hingga daerah yang bekerja secara profesional dan berintegritas.',
-        ];
-
-        return array_replace($defaults, CustomizeStruktur::query()->first()?->only(array_keys($defaults)) ?? []);
     }
 
     private function mediaSettings(): array

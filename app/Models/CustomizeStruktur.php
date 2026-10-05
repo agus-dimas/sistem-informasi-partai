@@ -9,9 +9,6 @@ class CustomizeStruktur extends Model
     protected $table = 'customize_struktur';
 
     protected $fillable = [
-        'struktur_section_tagline',
-        'struktur_section_title',
-        'struktur_section_description',
         'members',
     ];
 

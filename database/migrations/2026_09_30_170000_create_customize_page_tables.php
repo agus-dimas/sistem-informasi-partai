@@ -31,9 +31,6 @@ return new class extends Migration {
 
         Schema::create('customize_struktur', function (Blueprint $table) {
             $table->id();
-            $table->string('struktur_section_tagline')->nullable();
-            $table->string('struktur_section_title')->nullable();
-            $table->text('struktur_section_description')->nullable();
             $table->json('members')->nullable();
             $table->timestamps();
         });
@@ -67,19 +64,11 @@ return new class extends Migration {
             'misi4_section_tagline',
         ]);
 
-        $struktur = array_intersect_key($legacy, array_flip([
-            'struktur_section_tagline',
-            'struktur_section_title',
-            'struktur_section_description',
-        ]));
         $members = json_decode($legacy['struktur_board_members'] ?? '[]', true);
 
-        if ($struktur !== [] || is_array($members) && $members !== []) {
+        if (is_array($members) && $members !== []) {
             DB::table('customize_struktur')->insert([
-                'struktur_section_tagline' => $struktur['struktur_section_tagline'] ?? null,
-                'struktur_section_title' => $struktur['struktur_section_title'] ?? null,
-                'struktur_section_description' => $struktur['struktur_section_description'] ?? null,
-                'members' => json_encode(is_array($members) ? $members : []),
+                'members' => json_encode($members),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
