@@ -1,35 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Head } from '@inertiajs/react';
 import { PublicNavbar } from '@/components/public/PublicNavbar';
 import { Footer } from '@/components/public/Footer';
+import { useContent } from '@/services/contentService';
 
 export default function AboutIndex() {
-    const [settings, setSettings] = useState({
-        about_section_tagline: 'About Us',
-        about_section_title: 'GARDA REPUBLIK INDONESIA',
-        about_section_description:
-            'Kami hadir sebagai gerakan politik modern yang menghubungkan ide, aksi, dan dampak nyata untuk masyarakat.',
-        visi_section_tagline:
-            'Arah perjuangan kami dibangun di atas konstitusi, nilai kebangsaan, dan komitmen untuk menghadirkan dampak yang bisa dirasakan langsung oleh rakyat.',
-        misi1_section_tagline:
-            'Terwujudnya cita-cita nasional bangsa Indonesia sebagaimana dimaksud dalam Pembukaan Undang-Undang Dasar Negara Republik Indonesia Tahun 1945.',
-        misi2_section_tagline:
-            'Terwujudnya masyarakat demokratis yang adil dan sejahtera serta berkeyakinan pada Tuhan Yang Maha Esa, mencintai tanah air dan bangsa dalam bingkai Negara Kesatuan Republik Indonesia.',
-        misi3_section_tagline:
-            'Mewujudkan masyarakat kedaulatan rakyat dalam berdemokrasi, yang menjunjung tinggi nilai-nilai kebenaran dan hukum yang berlaku.',
-        misi4_section_tagline: 'Mewujudkan ekonomi kerakyatan yang berkeadilan.',
-    });
+    const content = useContent();
+    const hero = content.section('about', 'hero');
+    const visi = content.section('about', 'visi');
+    const misi1 = content.section('about', 'misi1');
+    const misi2 = content.section('about', 'misi2');
+    const misi3 = content.section('about', 'misi3');
+    const misi4 = content.section('about', 'misi4');
 
-    useEffect(() => {
-        fetch('/api/settings')
-            .then((res) => res.json())
-            .then((data) => {
-                if (data) {
-                    setSettings((prev) => ({ ...prev, ...data }));
-                }
-            })
-            .catch((err) => console.error('Fetch settings error:', err));
-    }, []);
+    const misiList = [
+        misi1.highlight,
+        misi2.highlight,
+        misi3.highlight,
+        misi4.highlight,
+    ];
 
     return (
         <div className="min-h-screen flex flex-col bg-[#f6f6f5]">
@@ -43,7 +32,7 @@ export default function AboutIndex() {
                         <div className="flex flex-col justify-start">
                             <div className="inline-flex flex-col items-start">
                                 <p className="pl-[2px] text-[11px] tracking-[0.28em] uppercase text-red-600 font-semibold mb-3 leading-none">
-                                    {settings.about_section_tagline || 'About Us'}
+                                    {hero.highlight || 'About Us'}
                                 </p>
                                 <h1 className="text-4xl md:text-6xl font-extrabold leading-[1.02] text-white">
                                     PARTAI GARUDA
@@ -53,10 +42,10 @@ export default function AboutIndex() {
                         <div className="flex items-end">
                             <div className="max-w-xl pl-5 md:pl-8 border-l border-white/30">
                                 <span className="block mb-2 text-red-600 font-semibold tracking-[0.16em] uppercase text-xs md:text-sm">
-                                    {settings.about_section_title || 'GARDA REPUBLIK INDONESIA'}
+                                    {hero.title || 'GARDA REPUBLIK INDONESIA'}
                                 </span>
                                 <p className="text-zinc-100/95 leading-relaxed text-sm md:text-base">
-                                    {settings.about_section_description}
+                                    {hero.description}
                                 </p>
                             </div>
                         </div>
@@ -100,16 +89,11 @@ export default function AboutIndex() {
                                 Terwujudnya Cita-cita Perubahan Indonesia.
                             </h2>
                             <p className="mt-3 text-zinc-600 leading-relaxed border-l-2 border-red-400 pl-4">
-                                {settings.visi_section_tagline}
+                                {visi.highlight}
                             </p>
 
                             <div className="mt-6 space-y-3">
-                                {[
-                                    settings.misi1_section_tagline,
-                                    settings.misi2_section_tagline,
-                                    settings.misi3_section_tagline,
-                                    settings.misi4_section_tagline,
-                                ].map((misiText, idx) => (
+                                {misiList.map((misiText, idx) => (
                                     <div
                                         key={idx}
                                         className="group rounded-2xl border border-zinc-200 bg-white px-4 py-4 transition-all duration-300 hover:border-red-200 hover:shadow-[0_12px_30px_rgba(179,24,31,0.12)]"

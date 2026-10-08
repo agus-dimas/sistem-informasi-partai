@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { PublicNavbar } from '@/components/public/PublicNavbar';
 import { Footer } from '@/components/public/Footer';
+import { useContent } from '@/services/contentService';
 
 interface YouTubeVideo {
     title: string;
@@ -95,30 +96,16 @@ const VideoCard = ({ title, channel, embedUrl }: YouTubeVideo) => {
 };
 
 export default function MediaIndex() {
+    const content = useContent();
+    const hero = content.section('media', 'hero');
+
     const statsRef = useRef<HTMLDivElement>(null);
     const [statsVisible, setStatsVisible] = useState(false);
     const viewCount = useRollingNumber(1287500, 3200, statsVisible);
-    const [settings, setSettings] = useState({
-        media_section_tagline: 'Highlight Media',
-        media_section_title: 'Sumber Informasi Resmi dan Terverifikasi',
-        media_section_description:
-            'Ruang media ini menampilkan dokumentasi gerakan, pernyataan resmi, dan aktivitas lapangan sebagai bentuk transparansi kerja organisasi kepada publik.',
-    });
 
     const { scrollY } = useScroll();
     const headerY = useTransform(scrollY, [0, 500], [0, 150]);
     const headerOpacity = useTransform(scrollY, [0, 300], [1, 0.3]);
-
-    useEffect(() => {
-        fetch('/api/settings')
-            .then((res) => res.json())
-            .then((data) => {
-                if (data) {
-                    setSettings((prev) => ({ ...prev, ...data }));
-                }
-            })
-            .catch((err) => console.error('Fetch settings error:', err));
-    }, []);
 
     useEffect(() => {
         if (!statsRef.current) return;
@@ -200,10 +187,10 @@ export default function MediaIndex() {
 
                             <div className="flex flex-col justify-center min-w-0">
                                 <p className="text-[9px] md:text-[11px] tracking-[0.16em] md:tracking-[0.28em] uppercase text-red-600 font-semibold mb-2 md:mb-3">
-                                    {settings.media_section_tagline || 'Highlight Media'}
+                                    {hero.highlight || 'Highlight Media'}
                                 </p>
                                 <h2 className="text-sm sm:text-lg md:text-3xl font-bold text-zinc-900 leading-tight">
-                                    {settings.media_section_title ||
+                                    {hero.title ||
                                         'Sumber Informasi Resmi dan Terverifikasi'}
                                     <img
                                         src="https://img.icons8.com/color/48/verified-badge.png"
@@ -213,7 +200,7 @@ export default function MediaIndex() {
                                     />
                                 </h2>
                                 <p className="mt-2 md:mt-3 text-[11px] sm:text-sm md:text-base text-zinc-600 leading-relaxed">
-                                    {settings.media_section_description ||
+                                    {hero.description ||
                                         'Ruang media ini menampilkan dokumentasi gerakan, pernyataan resmi, dan aktivitas lapangan sebagai bentuk transparansi kerja organisasi kepada publik.'}
                                 </p>
                                 <div className="mt-4 px-auto">

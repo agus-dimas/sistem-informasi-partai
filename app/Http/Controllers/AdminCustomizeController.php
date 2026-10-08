@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CustomizeAboutUs;
-use App\Models\CustomizeHome;
-use App\Models\CustomizeMedia;
 use App\Models\CustomizeStruktur;
+use App\Models\Page;
+use App\Models\Section;
+use App\Services\ContentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -14,6 +14,12 @@ use Inertia\Inertia;
 
 class AdminCustomizeController extends Controller
 {
+    protected ContentService $contentService;
+
+    public function __construct(ContentService $contentService)
+    {
+        $this->contentService = $contentService;
+    }
     private function defaultBoardMembers()
     {
         return [
@@ -104,11 +110,17 @@ class AdminCustomizeController extends Controller
             'home_section_description' => 'required|string',
         ]);
 
-        CustomizeHome::updateOrCreate(['id' => 1], $request->only([
-            'home_section_tagline',
-            'home_section_title',
-            'home_section_description',
-        ]));
+        $page = Page::firstOrCreate(['slug' => 'home'], ['name' => 'Home']);
+
+        Section::updateOrCreate(
+            ['page_id' => $page->id, 'key' => 'hero'],
+            [
+                'title' => $request->input('home_section_title'),
+                'highlight' => $request->input('home_section_tagline'),
+                'description' => $request->input('home_section_description'),
+                'sort_order' => 1,
+            ]
+        );
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Konten Home berhasil diperbarui.']);
 
@@ -139,16 +151,53 @@ class AdminCustomizeController extends Controller
             'misi4_section_tagline' => 'required|string|max:255',
         ]);
 
-        CustomizeAboutUs::updateOrCreate(['id' => 1], $request->only([
-            'about_section_tagline',
-            'about_section_title',
-            'about_section_description',
-            'visi_section_tagline',
-            'misi1_section_tagline',
-            'misi2_section_tagline',
-            'misi3_section_tagline',
-            'misi4_section_tagline',
-        ]));
+        $page = Page::firstOrCreate(['slug' => 'about'], ['name' => 'About']);
+
+        $sectionsData = [
+            'hero' => [
+                'title' => $request->input('about_section_title'),
+                'highlight' => $request->input('about_section_tagline'),
+                'description' => $request->input('about_section_description'),
+                'sort_order' => 1,
+            ],
+            'visi' => [
+                'title' => 'Visi',
+                'highlight' => $request->input('visi_section_tagline'),
+                'description' => null,
+                'sort_order' => 2,
+            ],
+            'misi1' => [
+                'title' => 'Misi 1',
+                'highlight' => $request->input('misi1_section_tagline'),
+                'description' => null,
+                'sort_order' => 3,
+            ],
+            'misi2' => [
+                'title' => 'Misi 2',
+                'highlight' => $request->input('misi2_section_tagline'),
+                'description' => null,
+                'sort_order' => 4,
+            ],
+            'misi3' => [
+                'title' => 'Misi 3',
+                'highlight' => $request->input('misi3_section_tagline'),
+                'description' => null,
+                'sort_order' => 5,
+            ],
+            'misi4' => [
+                'title' => 'Misi 4',
+                'highlight' => $request->input('misi4_section_tagline'),
+                'description' => null,
+                'sort_order' => 6,
+            ],
+        ];
+
+        foreach ($sectionsData as $key => $data) {
+            Section::updateOrCreate(
+                ['page_id' => $page->id, 'key' => $key],
+                $data
+            );
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Konten About Us berhasil diperbarui.']);
 
@@ -269,11 +318,17 @@ class AdminCustomizeController extends Controller
             'media_section_description' => 'required|string',
         ]);
 
-        CustomizeMedia::updateOrCreate(['id' => 1], $request->only([
-            'media_section_tagline',
-            'media_section_title',
-            'media_section_description',
-        ]));
+        $page = Page::firstOrCreate(['slug' => 'media'], ['name' => 'Media']);
+
+        Section::updateOrCreate(
+            ['page_id' => $page->id, 'key' => 'hero'],
+            [
+                'title' => $request->input('media_section_title'),
+                'highlight' => $request->input('media_section_tagline'),
+                'description' => $request->input('media_section_description'),
+                'sort_order' => 1,
+            ]
+        );
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Konten Media berhasil diperbarui.']);
 
@@ -297,44 +352,45 @@ class AdminCustomizeController extends Controller
             $this->aboutSettings(),
             ['struktur_board_members' => $members],
             $this->mediaSettings(),
+            ['pageContent' => $this->contentService->getAllContent()]
         ));
     }
 
     private function homeSettings(): array
     {
-        $defaults = [
-            'home_section_tagline' => 'Partai Garuda',
-            'home_section_title' => 'Gerakan Politik Kebangsaan Untuk Indonesia',
-            'home_section_description' => 'Partai Garuda hadir sebagai wadah perjuangan politik yang berfokus pada semangat nasionalisme, kerakyatan, dan keadilan sosial. Kami berjuang dan bekerja untuk perubahan Indonesia. Dan setiap kader kami adalah patriot-patriot bangsa yang selalu siap menyingsingkan lengan baju untuk mewujudkan cita-cita para pendiri Bangsa dan Negara Kesatuan Republik Indonesia.',
-        ];
+        $hero = $this->contentService->getSection('home', 'hero');
 
-        return array_replace($defaults, CustomizeHome::query()->first()?->only(array_keys($defaults)) ?? []);
+        return [
+            'home_section_tagline' => $hero['highlight'] ?? '',
+            'home_section_title' => $hero['title'] ?? '',
+            'home_section_description' => $hero['description'] ?? '',
+        ];
     }
 
     private function aboutSettings(): array
     {
-        $defaults = [
-            'about_section_tagline' => 'About Us',
-            'about_section_title' => 'Gerakan Politik Kebangsaan Untuk Indonesia',
-            'about_section_description' => 'Partai Garuda hadir sebagai wadah perjuangan politik yang berfokus pada semangat nasionalisme, kerakyatan, dan keadilan sosial. Kami berjuang dan bekerja untuk perubahan Indonesia.',
-            'visi_section_tagline' => 'Arah perjuangan kami dibangun di atas konstitusi, nilai kebangsaan, dan komitmen untuk menghadirkan dampak yang bisa dirasakan langsung oleh rakyat.',
-            'misi1_section_tagline' => 'Terwujudnya cita-cita nasional bangsa Indonesia sebagaimana dimaksud dalam PembukaanUndang-Undang Dasar Negara Republik Indonesia Tahun 1945.',
-            'misi2_section_tagline' => 'Terwujudnya masyarakat demokratis yang adil dan sejahtera serta berkeyakinan pada Tuhan Yang Maha Esa, mencintai tanah air dan bangsa dalam bingkai Negara Kesatuan Republik Indonesia.',
-            'misi3_section_tagline' => 'Mewujudkan masyarakat kedaulatan rakyat dalam berdemokrasi, yang menjunjung tinggi nilai-nilai kebenaran dan hukum yang berlaku.',
-            'misi4_section_tagline' => 'Mewujudkan ekonomi kerakyatan yang berkeadilan.',
-        ];
+        $hero = $this->contentService->getSection('about', 'hero');
 
-        return array_replace($defaults, CustomizeAboutUs::query()->first()?->only(array_keys($defaults)) ?? []);
+        return [
+            'about_section_tagline' => $hero['highlight'] ?? '',
+            'about_section_title' => $hero['title'] ?? '',
+            'about_section_description' => $hero['description'] ?? '',
+            'visi_section_tagline' => $this->contentService->get('about', 'visi', 'highlight') ?? '',
+            'misi1_section_tagline' => $this->contentService->get('about', 'misi1', 'highlight') ?? '',
+            'misi2_section_tagline' => $this->contentService->get('about', 'misi2', 'highlight') ?? '',
+            'misi3_section_tagline' => $this->contentService->get('about', 'misi3', 'highlight') ?? '',
+            'misi4_section_tagline' => $this->contentService->get('about', 'misi4', 'highlight') ?? '',
+        ];
     }
 
     private function mediaSettings(): array
     {
-        $defaults = [
-            'media_section_tagline' => 'Media Center',
-            'media_section_title' => 'Highlight Media & Dokumentasi',
-            'media_section_description' => 'Ruang media ini menampilkan dokumentasi gerakan, pernyataan resmi, dan aktivitas lapangan sebagai bentuk transparansi kerja organisasi kepada publik.',
-        ];
+        $hero = $this->contentService->getSection('media', 'hero');
 
-        return array_replace($defaults, CustomizeMedia::query()->first()?->only(array_keys($defaults)) ?? []);
+        return [
+            'media_section_tagline' => $hero['highlight'] ?? '',
+            'media_section_title' => $hero['title'] ?? '',
+            'media_section_description' => $hero['description'] ?? '',
+        ];
     }
 }
