@@ -7,6 +7,7 @@ import { useContent } from '@/services/contentService';
 export default function AboutIndex() {
     const content = useContent();
     const hero = content.section('about', 'hero');
+    const identity = content.section('about', 'identity');
     const visi = content.section('about', 'visi');
     const misi1 = content.section('about', 'misi1');
     const misi2 = content.section('about', 'misi2');
@@ -126,15 +127,13 @@ export default function AboutIndex() {
                     <div className="max-w-6xl mx-auto px-4 md:px-8">
                         <div className="relative w-screen left-1/2 right-1/2 -mx-[50vw] bg-[#202020] py-8 shadow-[0_20px_36px_rgba(0,0,0,0.18)]">
                             <p className="text-[10px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.25em] text-red-600 font-semibold text-center mb-2 md:mb-3">
-                                Menyatukan Semangat, Menguatkan Indonesia
+                                {identity.highlight || 'Menyatukan Semangat, Menguatkan Indonesia'}
                             </p>
                             <h3 className="text-lg md:text-3xl font-bold text-white text-center px-4">
-                                Identitas Partai Garuda untuk kedaulatan bangsa
+                                {identity.title || 'Identitas Partai Garuda untuk kedaulatan bangsa'}
                             </h3>
                             <p className="mt-3 md:mt-4 text-sm md:text-base text-zinc-300 text-center max-w-3xl mx-auto leading-relaxed px-4 md:px-0">
-                                Atribut partai Garuda mencerminkan nilai, jati diri, dan semangat
-                                perjuangan untuk bangsa dan rakyat. Setiap elemen lambang menegaskan
-                                komitmen partai dalam mengawal kedaulatan dan kesejahteraan masyarakat.
+                                {identity.description || 'Atribut partai Garuda mencerminkan nilai, jati diri, dan semangat perjuangan untuk bangsa dan rakyat. Setiap elemen lambang menegaskan komitmen partai dalam mengawal kedaulatan dan kesejahteraan masyarakat.'}
                             </p>
 
                             <div className="mt-4 flex justify-center px-4 md:px-0">

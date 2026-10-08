@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\CustomizeStruktur;
-use App\Models\Page;
-use App\Models\Section;
 use App\Services\ContentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -97,30 +95,25 @@ class AdminCustomizeController extends Controller
      */
     public function index()
     {
-        $settings = $this->homeSettings();
+        $settings = [
+            'sections' => $this->contentService->getPage('home'),
+        ];
 
         return Inertia::render('dashboard/customize/index', compact('settings'));
     }
 
     public function update(Request $request)
     {
-        $request->validate([
-            'home_section_tagline' => 'required|string|max:255',
-            'home_section_title' => 'required|string|max:255',
-            'home_section_description' => 'required|string',
+        $validated = $request->validate([
+            'sections' => ['required', 'array', 'min:1'],
+            'sections.*' => ['required', 'array'],
+            'sections.*.title' => ['nullable', 'string', 'max:255'],
+            'sections.*.highlight' => ['nullable', 'string'],
+            'sections.*.description' => ['nullable', 'string'],
+            'sections.*.sort_order' => ['sometimes', 'integer', 'min:1'],
         ]);
 
-        $page = Page::firstOrCreate(['slug' => 'home'], ['name' => 'Home']);
-
-        Section::updateOrCreate(
-            ['page_id' => $page->id, 'key' => 'hero'],
-            [
-                'title' => $request->input('home_section_title'),
-                'highlight' => $request->input('home_section_tagline'),
-                'description' => $request->input('home_section_description'),
-                'sort_order' => 1,
-            ]
-        );
+        $this->contentService->updatePageSections('home', $validated['sections']);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Konten Home berhasil diperbarui.']);
 
@@ -132,7 +125,9 @@ class AdminCustomizeController extends Controller
      */
     public function about()
     {
-        $settings = $this->aboutSettings();
+        $settings = [
+            'sections' => $this->contentService->getPage('about'),
+        ];
 
         return Inertia::render('dashboard/customize/about', compact('settings'));
     }
@@ -140,64 +135,16 @@ class AdminCustomizeController extends Controller
 
     public function updateAbout(Request $request)
     {
-        $request->validate([
-            'about_section_tagline' => 'required|string|max:255',
-            'about_section_title' => 'required|string|max:255',
-            'about_section_description' => 'required|string',
-            'visi_section_tagline' => 'required|string|max:255',
-            'misi1_section_tagline' => 'required|string|max:255',
-            'misi2_section_tagline' => 'required|string|max:255',
-            'misi3_section_tagline' => 'required|string|max:255',
-            'misi4_section_tagline' => 'required|string|max:255',
+        $validated = $request->validate([
+            'sections' => ['required', 'array', 'min:1'],
+            'sections.*' => ['required', 'array'],
+            'sections.*.title' => ['nullable', 'string', 'max:255'],
+            'sections.*.highlight' => ['nullable', 'string'],
+            'sections.*.description' => ['nullable', 'string'],
+            'sections.*.sort_order' => ['sometimes', 'integer', 'min:1'],
         ]);
 
-        $page = Page::firstOrCreate(['slug' => 'about'], ['name' => 'About']);
-
-        $sectionsData = [
-            'hero' => [
-                'title' => $request->input('about_section_title'),
-                'highlight' => $request->input('about_section_tagline'),
-                'description' => $request->input('about_section_description'),
-                'sort_order' => 1,
-            ],
-            'visi' => [
-                'title' => 'Visi',
-                'highlight' => $request->input('visi_section_tagline'),
-                'description' => null,
-                'sort_order' => 2,
-            ],
-            'misi1' => [
-                'title' => 'Misi 1',
-                'highlight' => $request->input('misi1_section_tagline'),
-                'description' => null,
-                'sort_order' => 3,
-            ],
-            'misi2' => [
-                'title' => 'Misi 2',
-                'highlight' => $request->input('misi2_section_tagline'),
-                'description' => null,
-                'sort_order' => 4,
-            ],
-            'misi3' => [
-                'title' => 'Misi 3',
-                'highlight' => $request->input('misi3_section_tagline'),
-                'description' => null,
-                'sort_order' => 5,
-            ],
-            'misi4' => [
-                'title' => 'Misi 4',
-                'highlight' => $request->input('misi4_section_tagline'),
-                'description' => null,
-                'sort_order' => 6,
-            ],
-        ];
-
-        foreach ($sectionsData as $key => $data) {
-            Section::updateOrCreate(
-                ['page_id' => $page->id, 'key' => $key],
-                $data
-            );
-        }
+        $this->contentService->updatePageSections('about', $validated['sections']);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Konten About Us berhasil diperbarui.']);
 
@@ -305,30 +252,25 @@ class AdminCustomizeController extends Controller
      */
     public function media()
     {
-        $settings = $this->mediaSettings();
+        $settings = [
+            'sections' => $this->contentService->getPage('media'),
+        ];
 
         return Inertia::render('dashboard/customize/media', compact('settings'));
     }
 
     public function updateMedia(Request $request)
     {
-        $request->validate([
-            'media_section_tagline' => 'required|string|max:255',
-            'media_section_title' => 'required|string|max:255',
-            'media_section_description' => 'required|string',
+        $validated = $request->validate([
+            'sections' => ['required', 'array', 'min:1'],
+            'sections.*' => ['required', 'array'],
+            'sections.*.title' => ['nullable', 'string', 'max:255'],
+            'sections.*.highlight' => ['nullable', 'string'],
+            'sections.*.description' => ['nullable', 'string'],
+            'sections.*.sort_order' => ['sometimes', 'integer', 'min:1'],
         ]);
 
-        $page = Page::firstOrCreate(['slug' => 'media'], ['name' => 'Media']);
-
-        Section::updateOrCreate(
-            ['page_id' => $page->id, 'key' => 'hero'],
-            [
-                'title' => $request->input('media_section_title'),
-                'highlight' => $request->input('media_section_tagline'),
-                'description' => $request->input('media_section_description'),
-                'sort_order' => 1,
-            ]
-        );
+        $this->contentService->updatePageSections('media', $validated['sections']);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Konten Media berhasil diperbarui.']);
 
@@ -347,50 +289,9 @@ class AdminCustomizeController extends Controller
             $members = $this->defaultBoardMembers();
         }
 
-        return response()->json(array_merge(
-            $this->homeSettings(),
-            $this->aboutSettings(),
-            ['struktur_board_members' => $members],
-            $this->mediaSettings(),
-            ['pageContent' => $this->contentService->getAllContent()]
-        ));
-    }
-
-    private function homeSettings(): array
-    {
-        $hero = $this->contentService->getSection('home', 'hero');
-
-        return [
-            'home_section_tagline' => $hero['highlight'] ?? '',
-            'home_section_title' => $hero['title'] ?? '',
-            'home_section_description' => $hero['description'] ?? '',
-        ];
-    }
-
-    private function aboutSettings(): array
-    {
-        $hero = $this->contentService->getSection('about', 'hero');
-
-        return [
-            'about_section_tagline' => $hero['highlight'] ?? '',
-            'about_section_title' => $hero['title'] ?? '',
-            'about_section_description' => $hero['description'] ?? '',
-            'visi_section_tagline' => $this->contentService->get('about', 'visi', 'highlight') ?? '',
-            'misi1_section_tagline' => $this->contentService->get('about', 'misi1', 'highlight') ?? '',
-            'misi2_section_tagline' => $this->contentService->get('about', 'misi2', 'highlight') ?? '',
-            'misi3_section_tagline' => $this->contentService->get('about', 'misi3', 'highlight') ?? '',
-            'misi4_section_tagline' => $this->contentService->get('about', 'misi4', 'highlight') ?? '',
-        ];
-    }
-
-    private function mediaSettings(): array
-    {
-        $hero = $this->contentService->getSection('media', 'hero');
-
-        return [
-            'media_section_tagline' => $hero['highlight'] ?? '',
-            'media_section_title' => $hero['title'] ?? '',
-            'media_section_description' => $hero['description'] ?? '',
-        ];
+        return response()->json([
+            'struktur_board_members' => $members,
+            'pageContent' => $this->contentService->getAllContent(),
+        ]);
     }
 }

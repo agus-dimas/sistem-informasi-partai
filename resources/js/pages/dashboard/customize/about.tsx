@@ -7,28 +7,53 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 
 interface CustomizeAboutProps {
     settings: {
-        about_section_tagline: string;
-        about_section_title: string;
-        about_section_description: string;
-        visi_section_tagline: string;
-        misi1_section_tagline: string;
-        misi2_section_tagline: string;
-        misi3_section_tagline: string;
-        misi4_section_tagline: string;
+        sections: Record<string, {
+            title?: string | null;
+            highlight?: string | null;
+            description?: string | null;
+            sort_order?: number;
+        }>;
     };
 }
 
 export default function CustomizeAbout({ settings }: CustomizeAboutProps) {
-    const { data, setData, post, processing, errors } = useForm({
-        about_section_tagline: settings.about_section_tagline || '',
-        about_section_title: settings.about_section_title || '',
-        about_section_description: settings.about_section_description || '',
-        visi_section_tagline: settings.visi_section_tagline || '',
-        misi1_section_tagline: settings.misi1_section_tagline || '',
-        misi2_section_tagline: settings.misi2_section_tagline || '',
-        misi3_section_tagline: settings.misi3_section_tagline || '',
-        misi4_section_tagline: settings.misi4_section_tagline || '',
+    const { data, setData, post, processing, errors } = useForm<{
+        sections: Record<string, {
+            title: string;
+            highlight: string;
+            description: string;
+            sort_order?: number;
+        }>;
+    }>({
+        sections: Object.fromEntries(
+            Object.entries(settings.sections || {}).map(([key, section]) => [key, {
+                title: section.title || '',
+                highlight: section.highlight || '',
+                description: section.description || '',
+                ...(section.sort_order ? { sort_order: section.sort_order } : {}),
+            }]),
+        ),
     });
+
+    const updateSection = (
+        key: string,
+        field: 'title' | 'highlight' | 'description',
+        value: string,
+    ) => {
+        setData('sections', {
+            ...data.sections,
+            [key]: {
+                title: '',
+                highlight: '',
+                description: '',
+                ...data.sections[key],
+                [field]: value,
+            },
+        });
+    };
+
+    const fieldError = (key: string, field: 'title' | 'highlight' | 'description') =>
+        errors[`sections.${key}.${field}`];
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -62,34 +87,22 @@ export default function CustomizeAbout({ settings }: CustomizeAboutProps) {
                                 <Label htmlFor="about_tagline">Tagline / Sub-Judul</Label>
                                 <Input
                                     id="about_tagline"
-                                    value={data.about_section_tagline}
-                                    onChange={(e) =>
-                                        setData('about_section_tagline', e.target.value)
-                                    }
+                                    value={data.sections.hero?.highlight || ''}
+                                    onChange={(e) => updateSection('hero', 'highlight', e.target.value)}
                                     required
                                 />
-                                {errors.about_section_tagline && (
-                                    <p className="text-xs text-red-600">
-                                        {errors.about_section_tagline}
-                                    </p>
-                                )}
+                                {fieldError('hero', 'highlight') && <p className="text-xs text-red-600">{fieldError('hero', 'highlight')}</p>}
                             </div>
 
                             <div className="space-y-1.5">
                                 <Label htmlFor="about_title">Judul Section</Label>
                                 <Input
                                     id="about_title"
-                                    value={data.about_section_title}
-                                    onChange={(e) =>
-                                        setData('about_section_title', e.target.value)
-                                    }
+                                    value={data.sections.hero?.title || ''}
+                                    onChange={(e) => updateSection('hero', 'title', e.target.value)}
                                     required
                                 />
-                                {errors.about_section_title && (
-                                    <p className="text-xs text-red-600">
-                                        {errors.about_section_title}
-                                    </p>
-                                )}
+                                {fieldError('hero', 'title') && <p className="text-xs text-red-600">{fieldError('hero', 'title')}</p>}
                             </div>
 
                             <div className="space-y-1.5">
@@ -97,18 +110,49 @@ export default function CustomizeAbout({ settings }: CustomizeAboutProps) {
                                 <textarea
                                     id="about_description"
                                     rows={4}
-                                    value={data.about_section_description}
-                                    onChange={(e) =>
-                                        setData('about_section_description', e.target.value)
-                                    }
+                                    value={data.sections.hero?.description || ''}
+                                    onChange={(e) => updateSection('hero', 'description', e.target.value)}
                                     className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                                     required
                                 />
-                                {errors.about_section_description && (
-                                    <p className="text-xs text-red-600">
-                                        {errors.about_section_description}
-                                    </p>
-                                )}
+                                {fieldError('hero', 'description') && <p className="text-xs text-red-600">{fieldError('hero', 'description')}</p>}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg">Section Identitas & Atribut</CardTitle>
+                            <CardDescription>
+                                Konten identitas partai yang tampil pada halaman Tentang Kami.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-1.5">
+                                <Label htmlFor="identity_highlight">Tagline</Label>
+                                <Input
+                                    id="identity_highlight"
+                                    value={data.sections.identity?.highlight || ''}
+                                    onChange={(e) => updateSection('identity', 'highlight', e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="identity_title">Judul Section</Label>
+                                <Input
+                                    id="identity_title"
+                                    value={data.sections.identity?.title || ''}
+                                    onChange={(e) => updateSection('identity', 'title', e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="identity_description">Deskripsi</Label>
+                                <textarea
+                                    id="identity_description"
+                                    rows={4}
+                                    value={data.sections.identity?.description || ''}
+                                    onChange={(e) => updateSection('identity', 'description', e.target.value)}
+                                    className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                />
                             </div>
                         </CardContent>
                     </Card>
@@ -126,10 +170,8 @@ export default function CustomizeAbout({ settings }: CustomizeAboutProps) {
                                 <Label htmlFor="visi">Deskripsi Visi</Label>
                                 <Input
                                     id="visi"
-                                    value={data.visi_section_tagline}
-                                    onChange={(e) =>
-                                        setData('visi_section_tagline', e.target.value)
-                                    }
+                                    value={data.sections.visi?.highlight || ''}
+                                    onChange={(e) => updateSection('visi', 'highlight', e.target.value)}
                                     required
                                 />
                             </div>
@@ -138,10 +180,8 @@ export default function CustomizeAbout({ settings }: CustomizeAboutProps) {
                                 <Label htmlFor="misi1">Deskripsi Misi #1</Label>
                                 <Input
                                     id="misi1"
-                                    value={data.misi1_section_tagline}
-                                    onChange={(e) =>
-                                        setData('misi1_section_tagline', e.target.value)
-                                    }
+                                    value={data.sections.misi1?.highlight || ''}
+                                    onChange={(e) => updateSection('misi1', 'highlight', e.target.value)}
                                     required
                                 />
                             </div>
@@ -150,10 +190,8 @@ export default function CustomizeAbout({ settings }: CustomizeAboutProps) {
                                 <Label htmlFor="misi2">Deskripsi Misi #2</Label>
                                 <Input
                                     id="misi2"
-                                    value={data.misi2_section_tagline}
-                                    onChange={(e) =>
-                                        setData('misi2_section_tagline', e.target.value)
-                                    }
+                                    value={data.sections.misi2?.highlight || ''}
+                                    onChange={(e) => updateSection('misi2', 'highlight', e.target.value)}
                                     required
                                 />
                             </div>
@@ -162,10 +200,8 @@ export default function CustomizeAbout({ settings }: CustomizeAboutProps) {
                                 <Label htmlFor="misi3">Deskripsi Misi #3</Label>
                                 <Input
                                     id="misi3"
-                                    value={data.misi3_section_tagline}
-                                    onChange={(e) =>
-                                        setData('misi3_section_tagline', e.target.value)
-                                    }
+                                    value={data.sections.misi3?.highlight || ''}
+                                    onChange={(e) => updateSection('misi3', 'highlight', e.target.value)}
                                     required
                                 />
                             </div>
@@ -174,10 +210,8 @@ export default function CustomizeAbout({ settings }: CustomizeAboutProps) {
                                 <Label htmlFor="misi4">Deskripsi Misi #4</Label>
                                 <Input
                                     id="misi4"
-                                    value={data.misi4_section_tagline}
-                                    onChange={(e) =>
-                                        setData('misi4_section_tagline', e.target.value)
-                                    }
+                                    value={data.sections.misi4?.highlight || ''}
+                                    onChange={(e) => updateSection('misi4', 'highlight', e.target.value)}
                                     required
                                 />
                             </div>

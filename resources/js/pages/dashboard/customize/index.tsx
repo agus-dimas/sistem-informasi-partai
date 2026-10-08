@@ -7,18 +7,43 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 
 interface CustomizeHomeProps {
     settings: {
-        home_section_tagline: string;
-        home_section_title: string;
-        home_section_description: string;
+        sections: Record<string, {
+            title?: string | null;
+            highlight?: string | null;
+            description?: string | null;
+            sort_order?: number;
+        }>;
     };
 }
 
 export default function CustomizeHome({ settings }: CustomizeHomeProps) {
-    const { data, setData, post, processing, errors } = useForm({
-        home_section_tagline: settings.home_section_tagline || '',
-        home_section_title: settings.home_section_title || '',
-        home_section_description: settings.home_section_description || '',
+    const { data, setData, post, processing, errors } = useForm<{
+        sections: Record<string, {
+            title: string;
+            highlight: string;
+            description: string;
+            sort_order?: number;
+        }>;
+    }>({
+        sections: Object.fromEntries(
+            Object.entries(settings.sections || {}).map(([key, section]) => [key, {
+                title: section.title || '',
+                highlight: section.highlight || '',
+                description: section.description || '',
+                ...(section.sort_order ? { sort_order: section.sort_order } : {}),
+            }]),
+        ),
     });
+
+    const updateSection = (
+        field: 'title' | 'highlight' | 'description',
+        value: string,
+    ) => {
+        setData('sections', {
+            ...data.sections,
+            hero: { ...data.sections.hero, [field]: value },
+        });
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -51,31 +76,27 @@ export default function CustomizeHome({ settings }: CustomizeHomeProps) {
                                 <Label htmlFor="tagline">Tagline / Sub-Judul</Label>
                                 <Input
                                     id="tagline"
-                                    value={data.home_section_tagline}
-                                    onChange={(e) => setData('home_section_tagline', e.target.value)}
+                                    value={data.sections.hero?.highlight || ''}
+                                    onChange={(e) => updateSection('highlight', e.target.value)}
                                     placeholder="Contoh: Partai Garuda"
                                     required
                                 />
                                 <p className="text-xs text-muted-foreground">
                                     Teks kecil di bagian paling atas hero section.
                                 </p>
-                                {errors.home_section_tagline && (
-                                    <p className="text-xs text-red-600">{errors.home_section_tagline}</p>
-                                )}
+                                {errors['sections.hero.highlight'] && <p className="text-xs text-red-600">{errors['sections.hero.highlight']}</p>}
                             </div>
 
                             <div className="space-y-2">
                                 <Label htmlFor="title">Judul Section Utama</Label>
                                 <Input
                                     id="title"
-                                    value={data.home_section_title}
-                                    onChange={(e) => setData('home_section_title', e.target.value)}
+                                    value={data.sections.hero?.title || ''}
+                                    onChange={(e) => updateSection('title', e.target.value)}
                                     placeholder="Contoh: Gerakan Politik Kebangsaan Untuk Indonesia"
                                     required
                                 />
-                                {errors.home_section_title && (
-                                    <p className="text-xs text-red-600">{errors.home_section_title}</p>
-                                )}
+                                {errors['sections.hero.title'] && <p className="text-xs text-red-600">{errors['sections.hero.title']}</p>}
                             </div>
 
                             <div className="space-y-2">
@@ -83,19 +104,13 @@ export default function CustomizeHome({ settings }: CustomizeHomeProps) {
                                 <textarea
                                     id="description"
                                     rows={5}
-                                    value={data.home_section_description}
-                                    onChange={(e) =>
-                                        setData('home_section_description', e.target.value)
-                                    }
+                                    value={data.sections.hero?.description || ''}
+                                    onChange={(e) => updateSection('description', e.target.value)}
                                     placeholder="Paragraf penjelasan di halaman depan..."
                                     className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                                     required
                                 />
-                                {errors.home_section_description && (
-                                    <p className="text-xs text-red-600">
-                                        {errors.home_section_description}
-                                    </p>
-                                )}
+                                {errors['sections.hero.description'] && <p className="text-xs text-red-600">{errors['sections.hero.description']}</p>}
                             </div>
 
                             <div className="flex justify-end pt-2">

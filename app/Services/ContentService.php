@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Page;
 use App\Models\Section;
+use Illuminate\Support\Facades\DB;
 
 class ContentService
 {
@@ -23,6 +24,11 @@ class ContentService
                 'title' => 'Gerakan Politik Kebangsaan Untuk Indonesia',
                 'highlight' => 'About Us',
                 'description' => 'Partai Garuda hadir sebagai wadah perjuangan politik yang berfokus pada semangat nasionalisme, kerakyatan, dan keadilan sosial. Kami berjuang dan bekerja untuk perubahan Indonesia.',
+            ],
+            'identity' => [
+                'title' => 'Identitas Partai Garuda untuk kedaulatan bangsa',
+                'highlight' => 'Menyatukan Semangat, Menguatkan Indonesia',
+                'description' => 'Atribut partai Garuda mencerminkan nilai, jati diri, dan semangat perjuangan untuk bangsa dan rakyat. Setiap elemen lambang menegaskan komitmen partai dalam mengawal kedaulatan dan kesejahteraan masyarakat.',
             ],
             'visi' => [
                 'title' => 'Visi',
@@ -141,5 +147,32 @@ class ContentService
         }
 
         return $result;
+    }
+
+    /**
+     * Memperbarui atau menyimpan banyak section sekaligus secara dinamis untuk sebuah halaman
+     */
+    public function updatePageSections(string $pageSlug, array $sectionsData): void
+    {
+        DB::transaction(function () use ($pageSlug, $sectionsData): void {
+            $page = Page::firstOrCreate(['slug' => $pageSlug], ['name' => ucfirst($pageSlug)]);
+            $sortOrder = 1;
+
+            foreach ($sectionsData as $key => $data) {
+                $currentSortOrder = $data['sort_order'] ?? $sortOrder;
+
+                Section::updateOrCreate(
+                    ['page_id' => $page->id, 'key' => $key],
+                    [
+                        'title' => $data['title'] ?? null,
+                        'highlight' => $data['highlight'] ?? null,
+                        'description' => $data['description'] ?? null,
+                        'sort_order' => $currentSortOrder,
+                    ]
+                );
+
+                $sortOrder = $currentSortOrder + 1;
+            }
+        });
     }
 }
