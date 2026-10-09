@@ -25,6 +25,8 @@ interface CardItem {
     author: string;
 }
 
+const HOME_NEWS_LIMIT = 4;
+
 const TiltCard = ({ title, description, image, link, author }: CardItem) => {
     const [tilt, setTilt] = useState({ x: 0, y: 0 });
     const threshold = 12;
@@ -83,14 +85,19 @@ export default function Home() {
             .then((res) => res.json())
             .then((result) => {
                 const data = result.data || [];
-                const formatted = data.map((n: any) => ({
-                    id: n.id,
-                    title: n.title,
-                    description: n.content,
-                    image: n.image ? `/storage/${n.image}` : '/placeholder.jpg',
-                    link: `/news/${n.id}`,
-                    author: n.user_name || 'Anonim',
-                }));
+                const formatted = data
+                    .filter((news: any, index: number, items: any[]) =>
+                        items.findIndex((item) => item.id === news.id) === index,
+                    )
+                    .slice(0, HOME_NEWS_LIMIT)
+                    .map((n: any) => ({
+                        id: n.id,
+                        title: n.title,
+                        description: n.content,
+                        image: n.image ? `/storage/${n.image}` : '/placeholder.jpg',
+                        link: `/news/${n.id}`,
+                        author: n.user_name || 'Anonim',
+                    }));
                 setCards(formatted);
                 setPage(result.current_page || 1);
                 setLastPage(result.last_page || 1);
@@ -279,8 +286,8 @@ export default function Home() {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {cards.map((card, i) => (
-                            <TiltCard key={i} {...card} />
+                        {cards.slice(0, HOME_NEWS_LIMIT).map((card, i) => (
+                            <TiltCard key={card.id ?? i} {...card} />
                         ))}
                     </div>
 
